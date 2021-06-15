@@ -53,7 +53,7 @@ export const drawMouseSelection = (selection, location) => {
     
 }
 
-export const drawStartScreen = (canvas, roomCode, startText, name, clickName, clickRoom, hoverStart) => {
+export const drawStartScreen = (canvas, roomCode, startText, name, clickName, clickRoom, hoverStart, hoverSinglePlayer) => {
     let ctx = Util.ctx;
     ctx.fillStyle = "#87CEEB";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -66,13 +66,19 @@ export const drawStartScreen = (canvas, roomCode, startText, name, clickName, cl
     let nameMeasure = ctx.measureText("Welcome, " + name);
     let roomMeasure = ctx.measureText("Enter room code: " + roomCode);
     let startMeasure = ctx.measureText(startText);
+    let singleMeasure = ctx.measureText("Single Player");
     ctx.fillText(startText, canvas.width/2 - startMeasure.width/2, canvas.height/2 + 90);
     ctx.fillText("Enter room code: " + roomCode, canvas.width/2 - roomMeasure.width/2, canvas.height/2 - 30);
     ctx.fillText("Welcome, " + name, canvas.width/2 - nameMeasure.width/2, canvas.height/2 - 150);
-
+    ctx.fillText("Single Player", canvas.width/2 - singleMeasure.width/2, canvas.height/2 + 210);
+    
     if(hoverStart){
         Util.draw(Util.IMAGES.BAT, canvas.width/2 - startMeasure.width/2 - 50, canvas.height/2 + 50, 0);
         Util.strokeRect(canvas.width/2 - startMeasure.width/2 - 25, canvas.height/2 + 50, startMeasure.width + 50, 50, Util.BLACK);
+    }
+    else if(hoverSinglePlayer){
+        Util.draw(Util.IMAGES.BAT, canvas.width/2 - startMeasure.width/2 - 133, canvas.height/2 + 170, 0);
+        Util.strokeRect(canvas.width/2 - singleMeasure.width/2 - 25, canvas.height/2 + 170, singleMeasure.width + 50, 50, Util.BLACK);
     }
     else if(clickName){
         Util.strokeRect(canvas.width/2 - nameMeasure.width/2 - 50, canvas.height/2 - 190, nameMeasure.width + 100, 50, Util.BLACK);
@@ -90,7 +96,7 @@ export const drawWaitRoom = (roomCode, other) => {
     }
 }
 
-export const drawEndScreen = (hoverEnd, counter, canvas, ) => {
+export const drawEndScreen = (hoverEnd, counter, canvas) => {
     let ctx = Util.ctx;
     ctx.fillStyle = "#fd5e53";
     ctx.fillRect(0, 0, canvas.width, canvas.height);

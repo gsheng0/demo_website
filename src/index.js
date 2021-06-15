@@ -16,21 +16,22 @@ import {MassiveBatFactory} from "./components/factories/MassiveBatFactory";
 import { BatFactory } from "./components/factories/BatFactory";
 import { Player } from "./utilities/Player";
 import {drawPanel, drawMouseSelection, drawStartScreen, drawWaitRoom, drawEndScreen} from "./utilities/Draw";
-import {handleSyncResponse} from "./utilities/handlers";
+import {handleSyncResponse, handleMouseMove0, handleMouseMove3, handleMouseDown2, handleMouseUp0, handleMouseUp2, handleMouseUp3} from "./utilities/handlers";
 
-var canvas, ctx, map, startMeasure, player, nest;
+var canvas, ctx, map, player, nest;
 var location = new Vector(0, 0);
 var pressed = false;
 let selection = undefined;
 var screen = 0;
 var hoverStart = false;
 var hoverEnd = false;
-var hoverName = false;
-var hoverRoom = false;
+var clickName = false;
+var clickRoom = false;
 var name = "Guest";
 var startText = "Start";
 var roomCode = "";
 var other = undefined;
+var hoverSinglePlayer = false;
 
 function init(){
 
@@ -49,133 +50,45 @@ function init(){
         let relativeY = e.clientY - canvas.offsetTop;
         location = new Vector(relativeX, relativeY);
         if(screen === 0){
-            let startMeasure = ctx.measureText(startText);
-            var topLeft = new Vector(canvas.width/2 - startMeasure.width/2 - 25, canvas.height/2 + 50);
-            var bottomRight = new Vector(topLeft.x + startMeasure.width + 50, topLeft.y + 50);
-            hoverStart = Util.withinBoundsCoords(location, topLeft, bottomRight);
+            let out = handleMouseMove0(startText, canvas, location);
+            hoverStart = out.hoverStart;
+            hoverSinglePlayer = out.hoverSinglePlayer;
+
+            if(hoverStart || hoverSinglePlayer){
+                clickRoom = false;
+                clickName = false;
+            }
         }
         else if(screen === 3){
-            let endMeasure = ctx.measureText("Ok");
+            hoverEnd = handleMouseMove3(canvas, location);
 
-            topLeft = new Vector(canvas.width/2 - endMeasure.width/2 - 50, canvas.height/2 - 50);
-            bottomRight = new Vector(topLeft.x + endMeasure.width + 100, topLeft.y + 150);
-            hoverEnd = Util.withinBoundsCoords(location, topLeft, bottomRight);
         }
 
     });
     document.addEventListener("pointerdown", (e) => {
-        if(e.button === 0){
-            pressed = true;
-            if(selection !== undefined)
-                return;
-
-            if(Util.withinBoundsCoords(location, new Vector(1050, 95), new Vector(1175, 230))){
-                selection = Chicken;
-            }
-            else if(Util.withinBoundsCoords(location, new Vector(1225, 95), new Vector(1350, 230))){
-                selection = MassiveChicken;
-            }
-            else if(Util.withinBoundsCoords(location, new Vector(1050, 325), new Vector(1175, 460))){
-                selection = Crow;
-            }
-            else if(Util.withinBoundsCoords(location, new Vector(1225, 325), new Vector(1350, 460))){
-                selection = Woodpecker;
-            }
+        if(screen === 2){
+            let out = handleMouseDown2(e, location);
+            selection = out.selection;
+            pressed = out.pressed;
         }
     });
     document.addEventListener("pointerup", (e) => {
-
         if(screen === 0){
             if(e.button === 0)
             {
-                if(hoverStart){
-                    if(roomCode === ""){
-                        roomCode = Util.createGameRoom(new Player(name, Util.USER_ID));
-                        console.log("room code: " + roomCode);
-                    }
-                    else{
-                        Util.joinGameRoom(roomCode, new Player(name, Util.USER_ID));
-                    }
-                    screen+=1;
-                }
-
-                let nameMeasure = ctx.measureText(name);
-                let topLeft = new Vector(canvas.width/2 - nameMeasure.width/2 - 50, canvas.height/2 - 190);
-                let bottomRight = new Vector(topLeft.x + nameMeasure.width + 100, topLeft.y + 50);
-                if(Util.withinBoundsCoords(location, topLeft, bottomRight)){
-                    hoverName = true;
-                    hoverRoom = false;
-                    hoverStart = false;
-                }
-                let roomMeasure = ctx.measureText("Enter room code: " + roomCode);
-                topLeft = new Vector(canvas.width/2 - roomMeasure.width/2 - 50, canvas.height/2 - 70);
-                bottomRight = new Vector(topLeft.x + roomMeasure.width + 100, topLeft.y + 50);
-                
-                if (Util.withinBoundsCoords(location, topLeft, bottomRight)){
-                    hoverRoom = true;
-                    hoverStart = false;
-                    hoverName = false;
-                }
-
+                let out = handleMouseUp0(location, hoverStart, roomCode, name, canvas, hoverSinglePlayer);
+                clickName = out.clickName;
+                clickRoom = out.clickRoom;
+                screen = out.screen;
             }
 
-        }
-        else if(screen === 3){
-            if(e.button === 0 && hoverEnd)
-            {
-                screen = 0;
-                reset();
-            }
         }
         else if(screen === 2){
-            if(e.button === 0){
-                if(location.x > 1000)
-                {
-                    selection = undefined;
-                    return;
-                }
-                if(selection === Chicken){
-                    if(player.getMoney() < 100){
-                        selection = undefined;
-                        return;
-                    }
-                    player.removeMoney(100);
-                    Chicken.build(location);
-                    Util.place("chicken", location, counter);
-                }
-                else if(selection === MassiveChicken){
-                    if(player.getMoney() < 750){
-                        selection = undefined;
-                        return;
-                    }
-                    player.removeMoney(750);
-                    MassiveChicken.build(location);
-                    Util.place("massivechicken");
-                }
-                else if(selection === Woodpecker){
-                    if(player.getMoney() < 50){
-                        selection = undefined;
-                        return;
-                    }
-                    player.removeMoney(50);
-                    Woodpecker.build(location);
-                    Util.place("woodpecker", location, counter);
-                }
-                else if(selection === Crow){
-                    if(player.getMoney() < 200){
-                        selection = undefined;
-                        return;
-                    }
-                    player.removeMoney(200);
-                    Crow.build(location);
-                    Util.place("crow", location, counter);
-                }
-                selection = undefined;
-            }
-            else if(e.button === 1){
-                BatFactory.build(location);
-                Util.place("batfactory", location, counter);
-            }
+            handleMouseUp2(e, location, player, selection, counter);
+            selection = undefined;
+        }
+        else if(screen === 3){
+            handleMouseUp3(e, hoverEnd, reset);
         }
 
     });
@@ -183,15 +96,15 @@ function init(){
     document.addEventListener("keydown", (e) => {
         if(screen === 0)
         {
-            if(!(hoverName || hoverRoom))
+            if(!(clickName || clickRoom))
                 return;
-            if(hoverName){
+            if(clickName){
                 if(e.key.length === 1)
                     name += e.key;
                 else if(e.key === "Backspace")
                     name = name.substring(0, name.length - 1);
             }
-            else if(hoverRoom){
+            else if(clickRoom){
                 if(e.key.length === 1)
                     roomCode += e.key;
                 else if(e.key === "Backspace")
@@ -230,6 +143,12 @@ function game() {
     Util.strokeRect(0, 0, canvas.width, canvas.height, Util.BLACK);
     Util.sync(handleSyncResponse);
 
+    if(hoverSinglePlayer){
+        //spawnBats
+        if(counter % 100 === 0)
+            spawnBat();
+    }
+
     map.nest.draw();
 
     for(let i = 0; i < map.projectiles.length; i++){
@@ -267,7 +186,7 @@ function frame(){
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     Util.strokeRect(0, 0, canvas.width, canvas.height, Util.BLACK);
     if(screen === 0)
-        drawStartScreen(canvas, roomCode, startText, name, hoverName, hoverRoom, hoverStart);
+        drawStartScreen(canvas, roomCode, startText, name, clickName, clickRoom, hoverStart, hoverSinglePlayer);
     else if(screen === 1)
         waitRoom();
     else if(screen === 2)
