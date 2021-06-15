@@ -138,7 +138,7 @@ export class Util {
 
     static request(suffix, type, data = undefined, onload = undefined){
         const call = new XMLHttpRequest();
-        call.open(type, "http://localhost:8080/" + suffix);
+        call.open(type, "https://gsheng-first-azure.azurewebsites.net/" + suffix);
         call.setRequestHeader('Content-Type', 'application/json');
         if(data !== undefined){
             call.send(data);

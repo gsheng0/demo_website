@@ -44,8 +44,8 @@ export const handleMouseMove0 = (startText, canvas, location) => {
     let hoverStart = Util.withinBoundsCoords(location, topLeft, bottomRight);
 
     let singleMeasure = ctx.measureText("Single Player");
-    var topLeft = new Vector(canvas.width/2 - singleMeasure.width/2 - 25, canvas.height/2 + 170);
-    var bottomRight = new Vector(topLeft.x + startMeasure.width + 50, topLeft.y + 50);
+    topLeft = new Vector(canvas.width/2 - singleMeasure.width/2 - 25, canvas.height/2 + 170);
+    bottomRight = new Vector(topLeft.x + startMeasure.width + 50, topLeft.y + 50);
     let hoverSinglePlayer = Util.withinBoundsCoords(location, topLeft, bottomRight);
     return {hoverStart: hoverStart, hoverSinglePlayer: hoverSinglePlayer};
 }
