@@ -77,6 +77,8 @@ export const handleMouseDown2 = (e, location) => {
         return {selection: Woodpecker, pressed: true};
     }
 
+    return {selection: undefined, pressed: false};
+
 }
 
 export const handleMouseUp0 = (location, hoverStart, roomCode, name, canvas, hoverSinglePlayer) => {
