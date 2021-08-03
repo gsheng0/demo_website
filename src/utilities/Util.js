@@ -139,6 +139,7 @@ export class Util {
     static request(suffix, type, data = undefined, onload = undefined){
         const call = new XMLHttpRequest();
         call.open(type, "https://service.gsheng.me:8443/bird/" + suffix);
+
         call.setRequestHeader('Content-Type', 'application/json');
         if(data !== undefined){
             call.send(data);
@@ -286,3 +287,4 @@ export class Util {
         })
     }
 }
+
