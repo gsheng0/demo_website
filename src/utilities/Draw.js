@@ -3,8 +3,11 @@ import {Chicken} from "../components/towers/Chicken";
 import {MassiveChicken} from "../components/towers/MassiveChicken";
 import {Crow} from "../components/towers/Crow";
 import {Woodpecker} from "../components/towers/Woodpecker";
+import { getClickChangeSides, getClickRequestChangeSides, getIsHost, getIsRequest } from "..";
+import { BatFactory } from "../components/factories/BatFactory";
+import {MassiveBatFactory} from "../components/factories/MassiveBatFactory";
 
-export const drawPanel = (money, health) => {
+export const drawBirdPanel = (money, health) => {
     let ctx = Util.ctx;
     Util.fillRect(1000, 0, 400, 800, "#964B00");
     Util.strokeRect(1020, 60, 360, 205, Util.BLACK);
@@ -33,6 +36,25 @@ export const drawPanel = (money, health) => {
     ctx.fillText("Health: " + health, 1015, 45);
 }
 
+export const drawBatPanel = (money, health) => {
+    let ctx = Util.ctx;
+    Util.fillRect(1000, 0, 400, 800, "#964B00");
+    Util.strokeRect(1020, 60, 360, 205, Util.BLACK);
+    Util.strokeRect(1050, 95, 125, 135, Util.BLACK);
+    Util.strokeRect(1225, 95, 125, 135, Util.BLACK);
+
+    Util.fillRect(1050 + 42, 95 + 42, 50, 50, Util.BLACK);
+    Util.fillRect(1225 + 12, 95 + 12, 100, 100, Util.BLACK);
+
+    ctx.font = '20px serif';
+    ctx.fillStyle = Util.BLACK;
+    ctx.fillText("$300", 1050+40, 90);
+    ctx.fillText('$1200', 1225+40, 90);
+
+    ctx.fillText("$" + money, 1015, 25);
+    ctx.fillText("Health: " + health, 1015, 45);
+}
+
 export const drawMouseSelection = (selection, location) => {
     if(selection === Chicken){
         Util.draw(Util.IMAGES.CHICKEN, location.x, location.y, 90, 85, 85);
@@ -49,6 +71,12 @@ export const drawMouseSelection = (selection, location) => {
     else if(selection === Woodpecker){
         Util.draw(Util.IMAGES.WOODPECKER, location.x, location.y, 90, 85, 85);
         Util.strokeCircle(location.x + 42, location.y + 42, Woodpecker.RANGE, Util.BLACK);
+    }
+    else if(selection === BatFactory){
+        Util.fillRect(location.x, location.y, 50, 50, Util.BLACK);
+    }
+    else if(selection === MassiveBatFactory){
+        Util.fillRect(location.x, location.y, 100, 100, Util.BLACK);
     }
     
 }
@@ -88,12 +116,48 @@ export const drawStartScreen = (canvas, roomCode, startText, name, clickName, cl
     }
 }
 
-export const drawWaitRoom = (roomCode, other) => {
+export const drawWaitRoom = (roomCode, other, player, birdPlayer) => {
     let ctx = Util.ctx;
-    ctx.fillText(roomCode, 400, 400);
+    ctx.fillText(roomCode, 700, 600);
+    ctx.fillText(player.name, 200, 200);
     if(other !== undefined){
-        ctx.fillText(other.name, 600, 600);
+        ctx.fillText(other.name, 1200, 200);
+        if(birdPlayer.name === other.name){
+            Util.draw(Util.IMAGES.CHICKEN, 1200, 100, 0, 50, 50);
+        }
+        else{
+            Util.draw(Util.IMAGES.BAT, 1200, 100, 0);
+        }
     }
+
+    if(birdPlayer.name === player.name){
+        Util.draw(Util.IMAGES.CHICKEN, 200, 100, 0, 50, 50);
+
+    }
+    else{
+        Util.draw(Util.IMAGES.BAT, 200, 100, 0);
+    }
+
+    ctx.fillStyle = Util.BLACK;
+    if(getIsHost()){
+        if(getIsRequest())
+        {
+            ctx.fillStyle = Util.RED;
+        }
+        ctx.fillText("Change Sides", 700, 500);
+        ctx.fillStyle = Util.BLACK;
+        let changeMeasure = ctx.measureText("Change Sides");
+        Util.strokeRect(700 - 50, 500 - 50, changeMeasure.width + 100, 75, Util.BLACK);
+        ctx.fillText("Press any key to start", 500, 100);
+    }
+    else{
+        ctx.fillText("Request Change Sides", 700, 500);
+        let changeMeasure = ctx.measureText("Request Change Sides");
+        Util.strokeRect(700 - 50, 500 - 50, changeMeasure.width + 100, 75, Util.BLACK);
+        ctx.fillText("Press any key to start", 500, 100);
+    }
+
+
 }
 
 export const drawEndScreen = (hoverEnd, counter, canvas) => {

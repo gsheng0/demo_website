@@ -1,6 +1,6 @@
 import {Map} from "./utilities/Map";
 import { Vector } from "./utilities/Vector";
-import { BirdPlayer } from "./utilities/BirdPlayer";
+
 import {Util} from "./utilities/Util";
 
 import { MassiveBat } from "./components/enemies/MassiveBat";
@@ -15,8 +15,8 @@ import { Nest } from "./components/towers/Nest";
 import {MassiveBatFactory} from "./components/factories/MassiveBatFactory";
 import { BatFactory } from "./components/factories/BatFactory";
 import { Player } from "./utilities/Player";
-import {drawPanel, drawMouseSelection, drawStartScreen, drawWaitRoom, drawEndScreen} from "./utilities/Draw";
-import {handleSyncResponse, handleMouseMove0, handleMouseMove3, handleMouseDown2, handleMouseUp0, handleMouseUp2, handleMouseUp3} from "./utilities/handlers";
+import {drawBirdPanel, drawMouseSelection, drawStartScreen, drawWaitRoom, drawEndScreen, drawBatPanel} from "./utilities/Draw";
+import {handleSyncResponse, handleMouseMove0, handleMouseMove3, handleMouseDown2, handleMouseUp0, handleMouseUp2, handleMouseUp3, handleMouseUp1} from "./utilities/handlers";
 
 var canvas, ctx, map, player, nest;
 var location = new Vector(0, 0);
@@ -32,6 +32,11 @@ var startText = "Start";
 var roomCode = "";
 var other = undefined;
 var hoverSinglePlayer = false;
+var isHost = false;
+var birdPlayer, batPlayer;
+var isRequesting = false;
+var clickChangeSides = false;
+var clickRequestChangeSides = false;
 
 function init(){
 
@@ -39,7 +44,8 @@ function init(){
     ctx = canvas.getContext("2d");
     map = new Map();
     nest = new Nest(map, new Vector(350, 250));
-    player = new BirdPlayer(map, nest);
+    player = new Player(-1);
+    birdPlayer = player;
     map.nest = nest;
     Util.setContext(ctx);
     Util.loadImages();
@@ -97,7 +103,12 @@ function game() {
         map.factories[i].exist();
         map.factories[i].draw();
     }
-    drawPanel(player.getMoney(), nest.getHealth());
+    if(birdPlayer.id === Util.USER_ID){
+        drawBirdPanel(player.getMoney(), nest.getHealth());
+    }
+    else{
+        drawBatPanel(player.getMoney(), nest.getHealth());
+    }
     if(pressed && selection !== undefined)
         drawMouseSelection(selection, location);
     if(!nest.alive)
@@ -119,8 +130,8 @@ function frame(){
 }
 
 function waitRoom(){
-    Util.syncRoom(roomCode, new Player(name, Util.USER_ID));
-    drawWaitRoom(roomCode, other);
+    Util.syncRoom(roomCode, new Player(Util.USER_ID, name));
+    drawWaitRoom(roomCode, other, player, birdPlayer);
 }
 
 function spawnBat(){
@@ -179,7 +190,10 @@ function setUpHandlers(){
 
     });
     document.addEventListener("pointerdown", (e) => {
-        if(screen === 2){
+        if(screen === 1){
+            handleMouseUp1(location, roomCode);
+        }
+        else if(screen === 2){
             let out = handleMouseDown2(e, location);
             selection = out.selection;
             pressed = out.pressed;
@@ -231,13 +245,30 @@ function setUpHandlers(){
             }
         }
         else if(screen === 1){
-            Util.syncRoom(roomCode, new Player(name, Util.USER_ID), true);
+            Util.syncRoom(roomCode, new Player(Util.USER_ID, name), true);
         }
 
     });
 }
 
 export const setRoomCode = (code) => {roomCode = code;};
+export const setHost = (host) => {isHost = host;}
+export const getIsHost = () => { return isHost; }
 export const setScreenNum = (num) => {screen = num;};
 export const setOtherPlayer = (temp) => { other = temp;}
-export const setName = (other) => { name = other;}
+export const setName = (other) => { player.name = other; name=other;}
+export const setBirdPlayer = (player) => {birdPlayer = player; }
+export const setBatPlayer = (player) => {batPlayer = player; }
+export const getOtherPlayer = () => { return other; }
+export const swapSides = () => {
+    let temp = birdPlayer;
+    birdPlayer = batPlayer;
+    batPlayer = temp;
+}
+export const getMapInstance = () => { return map; }
+export const getBatPlayer = () => { return batPlayer; }
+export const getBirdPlayer = () => { return birdPlayer; }
+export const setIsRequest = (request) => { isRequesting = request;}
+export const getIsRequest = () => { return isRequesting; }
+export const getClickChangeSides = () => { return clickChangeSides; }
+export const getClickRequestChangeSides = () => { return clickRequestChangeSides; }

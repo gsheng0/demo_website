@@ -7,6 +7,7 @@ import {BatFactory} from "../components/factories/BatFactory";
 import {MassiveBatFactory} from "../components/factories/MassiveBatFactory";
 import {Util} from "./Util";
 import {Player} from "./Player";
+import { getBirdPlayer, getIsHost} from "..";
 
 
 export const handleSyncResponse = (response) => {
@@ -61,20 +62,29 @@ export const handleMouseMove3 = (canvas, location) => {
 }
 
 export const handleMouseDown2 = (e, location) => {
+    let isBird = getBirdPlayer().id === Util.USER_ID;
     if(e.button !== 0)
         return {selection: undefined, pressed: false};
 
     if(Util.withinBoundsCoords(location, new Vector(1050, 95), new Vector(1175, 230))){
-        return {selection: Chicken, pressed: true};
+        if(isBird)
+            return {selection: Chicken, pressed: true};
+        return {selection: BatFactory, pressed: true};
     }
     else if(Util.withinBoundsCoords(location, new Vector(1225, 95), new Vector(1350, 230))){
-        return {selection: MassiveChicken, pressed: true};
+        if(isBird)
+            return {selection: MassiveChicken, pressed: true};
+        return {selection: MassiveBatFactory, pressed: true};
     }
     else if(Util.withinBoundsCoords(location, new Vector(1050, 325), new Vector(1175, 460))){
-        return {selection: Crow, pressed: true};
+        if(isBird)
+            return {selection: Crow, pressed: true};
+        return {selection: undefined, pressed: false};
     }
     else if(Util.withinBoundsCoords(location, new Vector(1225, 325), new Vector(1350, 460))){
-        return {selection: Woodpecker, pressed: true};
+        if(isBird)
+            return {selection: Woodpecker, pressed: true};
+        return {selection: undefined, pressed: false};
     }
 
     return {selection: undefined, pressed: false};
@@ -88,11 +98,11 @@ export const handleMouseUp0 = (location, hoverStart, roomCode, name, canvas, hov
     let clickRoom = false;
     if(hoverStart){
         if(roomCode === ""){
-            roomCode = Util.createGameRoom(new Player(name, Util.USER_ID));
+            roomCode = Util.createGameRoom(new Player(Util.USER_ID, name));
             console.log("room code: " + roomCode);
         }
         else{
-            Util.joinGameRoom(roomCode, new Player(name, Util.USER_ID));
+            Util.joinGameRoom(roomCode, new Player(Util.USER_ID, name));
         }
         //next screen
         screen++;
@@ -126,14 +136,28 @@ export const handleMouseUp0 = (location, hoverStart, roomCode, name, canvas, hov
     
 }
 
+export const handleMouseUp1 = (location, roomCode) => {
+    console.log("HERE");
+    let ctx = Util.ctx;
+    let text = "";
+    if(getIsHost()){
+        text = "Change Sides";
+    }
+    else{
+        text = "Request Change Sides";
+    }
+    let changeMeasure = ctx.measureText(text);
+    let topLeft = new Vector(700 - 50, 500 - 50);
+    let bottomRight = new Vector(700 + changeMeasure.width + 50, 500 + 25);
+    if(Util.withinBoundsCoords(location, topLeft, bottomRight)){
+        Util.changeSide(roomCode, getIsHost());
+    }
+}
+
 
 
 export const handleMouseUp2 = (e, location, player, selection, counter) => {
-    if(e.button === 1){
-        BatFactory.build(location);
-        Util.place("batfactory", location, counter);
-        return;
-    }
+
     if(e.button !== 0){
         return;
     }
@@ -178,6 +202,24 @@ export const handleMouseUp2 = (e, location, player, selection, counter) => {
         player.removeMoney(200);
         Crow.build(location);
         Util.place("crow", location, counter);
+    }
+    else if(selection === BatFactory){
+        if(player.getMoney() < 300){
+            selection = undefined;
+            return;
+        }
+        player.removeMoney(300);
+        BatFactory.build(location);
+        Util.place("batfactory", location, counter);
+    }
+    else if(selection === MassiveBatFactory){
+        if(player.getMoney() < 1200){
+            selection = undefined;
+            return;
+        }
+        player.removeMoney(1200);
+        MassiveBatFactory.build(location);
+        Util.place("massivebatfactory", location, counter);
     }
     selection = undefined;
 }

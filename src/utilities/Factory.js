@@ -1,6 +1,5 @@
 import { Bat } from "../components/enemies/Bat";
 import { MassiveBat } from "../components/enemies/MassiveBat";
-import { Util } from "./Util";
 
 export class Factory{
     constructor(map, location, spawnRate, product){
@@ -30,7 +29,5 @@ export class Factory{
         }
     }
 
-    draw(){
-        Util.fillRect(this.getLocation().x, this.getLocation().y, 50, 50, Util.BLACK);
-    }
+
 }

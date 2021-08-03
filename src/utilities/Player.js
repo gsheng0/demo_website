@@ -1,8 +1,16 @@
 export class Player{
-    constructor(name, id){
-        this.name = name;
+    constructor(id, name ="Guest"){
         this.id = id;
+        this.name = name;
+        this.money = 300;
     }
-    getName() { return this.name; }
     getId() { return this.id; }
+    getName() { return this.name;}
+    getMoney() { return this.money; }
+    toString() { 
+        return "Name: " + this.name + " id: " + this.id;
+    }
+    removeMoney(amount) { 
+        this.money -= amount;
+    }
 }

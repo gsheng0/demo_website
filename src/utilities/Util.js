@@ -1,5 +1,5 @@
 import {Vector} from "./Vector";
-import {setRoomCode, setScreenNum, setOtherPlayer, setName} from "../index";
+import {setRoomCode, setScreenNum, setOtherPlayer, setName, setHost, setBirdPlayer, getOtherPlayer, setBatPlayer, swapSides, getBatPlayer, getBirdPlayer, setIsRequest} from "../index";
 import { Player } from "./Player";
 
 export class Util {
@@ -138,7 +138,7 @@ export class Util {
 
     static request(suffix, type, data = undefined, onload = undefined){
         const call = new XMLHttpRequest();
-        call.open(type, "https://gsheng-first-azure.azurewebsites.net/" + suffix);
+        call.open(type, "https://service.gsheng.me:8443/bird/" + suffix);
         call.setRequestHeader('Content-Type', 'application/json');
         if(data !== undefined){
             call.send(data);
@@ -174,7 +174,7 @@ export class Util {
         Util.request("join", "GET", undefined, (e) => {
             Util.USER_ID = e.response;
             console.log("You are user: " + Util.USER_ID);
-            setName("Guest: " + Util.USER_ID);
+            setName("Guest " + Util.USER_ID);
         })
 
     }
@@ -190,7 +190,8 @@ export class Util {
     }
 
     static createGameRoom(player){
-        let data = JSON.stringify({id: Util.USER_ID, type: "create request", player: player});
+        let expPlayer = {name: player.getName(), id: player.getId()}
+        let data = JSON.stringify({id: Util.USER_ID, type: "create request", player: expPlayer});
         Util.request("room/create", "POST", data, (e) => {
             let reply = JSON.parse(e.response);
             console.log(reply);
@@ -200,12 +201,15 @@ export class Util {
             }
             else{
                 setRoomCode(reply.code);
+                setHost(true);
+                setBirdPlayer(player);
             }
         })
     }
 
     static joinGameRoom(roomCode, player){
-        let data = JSON.stringify({id: Util.USER_ID, type: "join room request", code: roomCode, player: player});
+        let expPlayer = {name: player.getName(), id: player.getId()}
+        let data = JSON.stringify({id: Util.USER_ID, type: "join room request", code: roomCode, player: expPlayer});
         Util.request("room/join", "POST", data, (e) => {
             let reply = JSON.parse(e.response);
             console.log(reply);
@@ -214,25 +218,70 @@ export class Util {
                 setScreenNum(0);
             }
             else{
-                setOtherPlayer(new Player(reply.otherPlayer.name, reply.otherPlayer.id));
+                setOtherPlayer(new Player(reply.otherPlayer.id, reply.otherPlayer.name));
+                console.log(getOtherPlayer().toString());
+                if(reply.side === "bird"){
+                    setBirdPlayer(getOtherPlayer());
+                    setBatPlayer(player);
+                }
+                else{
+                    setBatPlayer(getOtherPlayer());
+                    setBirdPlayer(player);
+                }
             }
         })
     }
 
     static syncRoom(roomCode, player, start){
-        let data = JSON.stringify({id: Util.USER_ID, type: "sync room request", code: roomCode, player: player, start: start});
+        let expPlayer = {name: player.getName(), id: player.getId()}
+        let data = JSON.stringify({id: Util.USER_ID, type: "sync room request", code: roomCode, player: expPlayer, start: start});
         Util.request("room/sync", "POST", data, (e) =>{
             let reply = JSON.parse(e.response);
             
             if(reply.error){
                 alert(reply.errorMessage);
             }
-            else if(reply.other){
-                setOtherPlayer(new Player(reply.player.name, reply.player.id));
-                console.log(reply);
+            if(reply.other){
+                setOtherPlayer(new Player(reply.player.id, reply.player.name));
+                if(reply.side === "bat"){
+                    if(getBatPlayer() === undefined){
+                        setBatPlayer(getOtherPlayer());
+                    }
+                    else if(getBatPlayer().getId() !== getOtherPlayer().getId()){
+                        swapSides();
+                        setIsRequest(false);
+                    }
+                }
+                else{
+                    if(getBirdPlayer() === undefined){
+                        setBirdPlayer(getOtherPlayer());
+                    }
+                    else if(getBirdPlayer().getId() !== getOtherPlayer().getId()){
+                        swapSides();
+                        setIsRequest(false);
+                    }
+                }
+
+                if(reply.changeSideRequest){
+                    setIsRequest(true);
+                }
+                //console.log(reply);
                 if(reply.start){
                     setScreenNum(2);
                 }
+            }
+        })
+    }
+    static changeSide(roomCode, isFromHost){
+        let data = JSON.stringify({id: Util.USER_ID, type: "change side request", roomCode: roomCode, isFromHost: isFromHost});
+        Util.request("room/change", "POST", data, (e) => {
+            let reply = JSON.parse(e.response);
+
+            if(reply.error){
+                alert(reply.errorMessage);
+            }
+            else{
+                
             }
         })
     }
