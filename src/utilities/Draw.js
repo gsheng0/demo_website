@@ -3,7 +3,7 @@ import {Chicken} from "../components/towers/Chicken";
 import {MassiveChicken} from "../components/towers/MassiveChicken";
 import {Crow} from "../components/towers/Crow";
 import {Woodpecker} from "../components/towers/Woodpecker";
-import { getClickChangeSides, getClickRequestChangeSides, getIsHost, getIsRequest } from "..";
+import { getIsHost, getIsRequest } from "..";
 import { BatFactory } from "../components/factories/BatFactory";
 import {MassiveBatFactory} from "../components/factories/MassiveBatFactory";
 
