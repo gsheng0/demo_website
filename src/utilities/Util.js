@@ -28,36 +28,37 @@ export class Util {
         myImage = new Image(100, 100);
         myImage.src = "egg.png";
         let finalImage = myImage;*/
+        let imgDir = "imageBirdDefense/";
         let chicken = new Image();
-        chicken.src = "chicken.png";
+        chicken.src = imgDir + "chicken.png";
 
         let bat = new Image();
         bat.loading = "eager"
-        bat.src = "bat.png";
+        bat.src = imgDir + "bat.png";
 
         let crow = new Image();
         crow.loading = "eager";
-        crow.src = "crow.png";
+        crow.src = imgDir + "crow.png";
 
         let egg = new Image();
         egg.loading = "eager";
-        egg.src = "egg.png";
+        egg.src = imgDir + "egg.png";
 
         let nest = new Image();
         nest.loading = "eager";
-        nest.src = "nest.png";
+        nest.src = imgDir + "nest.png";
 
         let rock = new Image();
         rock.loading = "eager";
-        rock.src = "rock.png";
+        rock.src = imgDir + "rock.png";
 
         let woodpecker = new Image();
         woodpecker.loading = "eager";
-        woodpecker.src = "woodpecker.png";
+        woodpecker.src = imgDir + "woodpecker.png";
 
         let title = new Image();
         title.loading = "eager";
-        title.src = "bird_defense.png";
+        title.src = imgDir + "bird_defense.png";
 
 
         Util.IMAGES.CHICKEN = chicken;
@@ -138,7 +139,8 @@ export class Util {
 
     static request(suffix, type, data = undefined, onload = undefined){
         const call = new XMLHttpRequest();
-        call.open(type, "https://service.gsheng.me:8443/bird/" + suffix);
+        // call.open(type, "https://service.gsheng.me:8443/bird/" + suffix);
+        call.open(type, "http://gsheng-me:8080/bird/" + suffix);
 
         call.setRequestHeader('Content-Type', 'application/json');
         if(data !== undefined){

@@ -22,7 +22,7 @@ var canvas, ctx, map, player, nest;
 var location = new Vector(0, 0);
 var pressed = false;
 let selection = undefined;
-var screen = 0;
+var screenNum= 0;
 var hoverStart = false;
 var hoverEnd = false;
 var clickName = false;
@@ -52,7 +52,7 @@ function init(){
     ctx.font = "50px serif";
     Util.getGameId();
 
-    setUpHandlers();
+    setUpHandlers(canvas);
 
     Bat.setMap(map);
     MassiveBat.setMap(map);
@@ -112,20 +112,20 @@ function game() {
     if(pressed && selection !== undefined)
         drawMouseSelection(selection, location);
     if(!nest.alive)
-        screen++;
+        screenNum++;
     counter++;
 }
 
 function frame(){
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     Util.strokeRect(0, 0, canvas.width, canvas.height, Util.BLACK);
-    if(screen === 0)
+    if(screenNum=== 0)
         drawStartScreen(canvas, roomCode, startText, name, clickName, clickRoom, hoverStart, hoverSinglePlayer);
-    else if(screen === 1)
+    else if(screenNum=== 1)
         waitRoom();
-    else if(screen === 2)
+    else if(screenNum=== 2)
         game();
-    else if(screen === 3)
+    else if(screenNum=== 3)
         drawEndScreen(hoverEnd, counter, canvas);
 }
 
@@ -168,12 +168,12 @@ window.onload = () => {
     setInterval(frame, 30);
 }
 
-function setUpHandlers(){
+function setUpHandlers(canvas){
     document.addEventListener("pointermove", (e) =>{
         let relativeX = e.clientX - canvas.offsetLeft;
         let relativeY = e.clientY - canvas.offsetTop;
         location = new Vector(relativeX, relativeY);
-        if(screen === 0){
+        if(screenNum=== 0){
             let out = handleMouseMove0(startText, canvas, location);
             hoverStart = out.hoverStart;
             hoverSinglePlayer = out.hoverSinglePlayer;
@@ -183,45 +183,47 @@ function setUpHandlers(){
                 clickName = false;
             }
         }
-        else if(screen === 3){
+        else if(screenNum=== 3){
             hoverEnd = handleMouseMove3(canvas, location);
 
         }
 
     });
-    document.addEventListener("pointerdown", (e) => {
-        if(screen === 1){
+    canvas.addEventListener("pointerdown", (e) => {
+        console.log("mouse down");
+        if(screenNum=== 1){
             handleMouseUp1(location, roomCode);
         }
-        else if(screen === 2){
+        else if(screenNum=== 2){
             let out = handleMouseDown2(e, location);
             selection = out.selection;
             pressed = out.pressed;
         }
     });
     document.addEventListener("pointerup", (e) => {
-        if(screen === 0){
+        console.log("mouse up");
+        if(screenNum=== 0){
             if(e.button === 0)
             {
                 let out = handleMouseUp0(location, hoverStart, roomCode, name, canvas, hoverSinglePlayer);
                 clickName = out.clickName;
                 clickRoom = out.clickRoom;
-                screen = out.screen;
+                screenNum= out.screen;
             }
 
         }
-        else if(screen === 2){
+        else if(screenNum=== 2){
             handleMouseUp2(e, location, player, selection, counter);
             selection = undefined;
         }
-        else if(screen === 3){
+        else if(screenNum=== 3){
             handleMouseUp3(e, hoverEnd, reset);
         }
 
     });
 
     document.addEventListener("keydown", (e) => {
-        if(screen === 0)
+        if(screenNum=== 0)
         {
             if(!(clickName || clickRoom))
                 return;
@@ -244,7 +246,7 @@ function setUpHandlers(){
                 }
             }
         }
-        else if(screen === 1){
+        else if(screenNum=== 1){
             Util.syncRoom(roomCode, new Player(Util.USER_ID, name), true);
         }
 
@@ -254,7 +256,7 @@ function setUpHandlers(){
 export const setRoomCode = (code) => {roomCode = code;};
 export const setHost = (host) => {isHost = host;}
 export const getIsHost = () => { return isHost; }
-export const setScreenNum = (num) => {screen = num;};
+export const setScreenNum = (num) => {screenNum= num;};
 export const setOtherPlayer = (temp) => { other = temp;}
 export const setName = (other) => { player.name = other; name=other;}
 export const setBirdPlayer = (player) => {birdPlayer = player; }
