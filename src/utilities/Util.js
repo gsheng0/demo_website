@@ -1,6 +1,7 @@
 import {Vector} from "./Vector";
 import {setRoomCode, setScreenNum, setOtherPlayer, setName, setHost, setBirdPlayer, getOtherPlayer, setBatPlayer, swapSides, getBatPlayer, getBirdPlayer, setIsRequest} from "../index";
 import { Player } from "./Player";
+import { conf } from "../config";
 
 export class Util {
     static TOP_LEFT = new Vector(0, 0);
@@ -138,7 +139,8 @@ export class Util {
 
     static request(suffix, type, data = undefined, onload = undefined){
         const call = new XMLHttpRequest();
-        call.open(type, "https://service.gsheng.me:8443/bird/" + suffix);
+        // call.open(type, "https://service.gsheng.me:8443/bird/" + suffix);
+        call.open(type, conf.server + suffix);
 
         call.setRequestHeader('Content-Type', 'application/json');
         if(data !== undefined){
